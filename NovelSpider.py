@@ -70,15 +70,15 @@ def get_chapter_text(chapter_url):
 
 # 小说列表主入口函数
 def get_novel_list_main():
-    start_url = novel_info.getPageUrl(1)
+    start_url = novel_info.get_page_url(1)
     html = get_html(start_url, "utf-8", "pageList.bak")
     if html is None:
         return
     count = get_content(html, ".pages .pagelink .last").text()
-    novel_info.setPageCount(int(count))
+    novel_info.set_page_count(int(count))
     # 循环获取页面
     for page in range(1, int(count) + 1):
-        result = get_novel_list(novel_info.getPageUrl(page))
+        result = get_novel_list(novel_info.get_page_url(page))
         if result == 0:
             continue
 

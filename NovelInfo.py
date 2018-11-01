@@ -6,7 +6,7 @@ class Novel23us:
     def __init__(self, pageCount):
         self.__pageCount = pageCount
 
-    def getPageUrl(self, page=1):
+    def get_page_url(self, page=1):
         if page > self.__pageCount:
             raise ValueError("invalid value: %s" % page)
         return self.__templateList % page
@@ -14,5 +14,5 @@ class Novel23us:
     def get_detail_url(self, source_id):
         return self.__templateDetail.format(source_id)
 
-    def setPageCount(self, pageCount):
+    def set_page_count(self, pageCount):
         self.__pageCount = pageCount
