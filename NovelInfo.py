@@ -3,8 +3,8 @@ class Novel23us:
     __templateList = "https://www.23us.so/top/allvisit_%s.html"
     __templateDetail = "https://www.23us.so/xiaoshuo/{}.html"
 
-    def __init__(self, pageCount):
-        self.__pageCount = pageCount
+    def __init__(self, page_count):
+        self.__pageCount = page_count
 
     def get_page_url(self, page=1):
         if page > self.__pageCount:
@@ -14,5 +14,5 @@ class Novel23us:
     def get_detail_url(self, source_id):
         return self.__templateDetail.format(source_id)
 
-    def set_page_count(self, pageCount):
-        self.__pageCount = pageCount
+    def set_page_count(self, page_count):
+        self.__pageCount = page_count
