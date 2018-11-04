@@ -1,12 +1,20 @@
-import mysql.connector
+import pymysql.cursors
 
 
 class DBhelper:
+    # __cnx_kwargs = {
+    #     'host': "192.168.10.53",
+    #     'user': "mysql",
+    #     'password': "password",
+    #     'database': "novel",
+    #     'port': 3306,
+    #     'charset': 'utf8',
+    # }
     __cnx_kwargs = {
-        'host': "192.168.10.53",
-        'user': "mysql",
-        'password': "password",
-        'database': "ntest",
+        'host': "localhost",
+        'user': "root",
+        'password': "mysql",
+        'database': "novel",
         'port': 3306,
         'charset': 'utf8',
     }
@@ -15,7 +23,7 @@ class DBhelper:
     def conn(self):
         if self.__conn is not None:
             return self.__conn
-        self.__conn = mysql.connector.connect(**self.__cnx_kwargs)
+        self.__conn = pymysql.connect(**self.__cnx_kwargs)
         return self.__conn
 
     def update(self, sql, args=()):
@@ -26,7 +34,7 @@ class DBhelper:
             update_count = cursor.rowcount
             self.__conn.commit()
             print(sql % args)
-        except mysql.connector.DatabaseError as e:
+        except pymysql.err.DatabaseError as e:
             print('update error!{}'.format(e))
             self.__conn.rollback()
             raise e
@@ -41,7 +49,7 @@ class DBhelper:
             cursor.execute(sql, args)
             value = cursor.fetchall()
             print(sql % args)
-        except mysql.connector.DatabaseError as e:
+        except pymysql.err.DatabaseError as e:
             print('query error!{}'.format(e))
             raise e
         finally:
@@ -54,7 +62,7 @@ class DBhelper:
             cursor = self.conn().cursor()
             cursor.execute(sql, args)
             value = cursor.fetchone()
-        except mysql.connector.DatabaseError as e:
+        except pymysql.err.DatabaseError as e:
             print('query error!{}'.format(e))
             raise e
         finally:
