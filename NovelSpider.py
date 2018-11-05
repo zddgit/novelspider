@@ -4,6 +4,7 @@ import re
 import time
 from RedisHelper import RedisHelper
 import base64
+import zlib
 
 import requests
 from pyquery import PyQuery
@@ -59,10 +60,9 @@ def get_content(html, selector):
         return doc(selector)
 
 
-def get_detail(source_id):
+def get_detail(source_id, novel_id):
     '''根据数据库小说源id生成小说详情页网址，进而获取小说封面，以及章节信息并保存'''
     detail_url = novel_info.get_detail_url(source_id)
-    novel_id = dbhelper.query_one("select id from novel where sourceId = %s" % source_id)[0]
     file_name = "detail.bak"
     fn = save_to_file(file_name=file_name, save_text=detail_url + "," + str(source_id))
     html = get_html(detail_url, fn=fn)
@@ -94,14 +94,18 @@ def get_detail(source_id):
         chapter_id = chapter_id + 1
         chapter_url = get_content(item, "a").attr.href
         title = get_content(item, "a").text()
-        sql = "INSERT into chapter (novelId,chapterId,title,source) VALUES (%s,%s,%s,%s)"
-        dbhelper.update(sql, (novel_id, chapter_id, title, chapter_url))
         chapter_text = get_chapter_text(chapter_url, source_id, chapter_id)
-        if chapter_text == 0:
-            continue
-        else:
-            # 保存单章信息到redis
-            redis_helper.get_redis().hset("contents_{}".format(novel_id), chapter_id, chapter_text)
+        zlib_chapter_text = bytes()
+        if chapter_text != 0:
+            text = chapter_text.encode(encoding="GBK", errors="ignore")
+            zlib_chapter_text = zlib.compress(text)
+        sql = "INSERT into chapter (novelId,chapterId,title,source,content) VALUES (%s,%s,%s,%s,%s) on DUPLICATE key update content = values(content)"
+        dbhelper.update(sql, (novel_id, chapter_id, title, chapter_url, zlib_chapter_text))
+        # if chapter_text == 0:
+        #     continue
+        # else:
+        #     # 保存单章信息到redis
+        #     redis_helper.get_redis().hset("contents_{}".format(novel_id), chapter_id, chapter_text)
         time.sleep(random.randint(1, 3))
 
 
@@ -151,7 +155,6 @@ def get_novel_list(page_url):
         novels.append(str((novel_name, author, int(novel_id))))
     sql = "insert into novel (`name`,author,sourceId) values "
     sql = sql + ",".join(novels)
-    print(sql)
     dbhelper.update(sql)
     time.sleep(random.randint(2, 4))
     return 1
@@ -174,9 +177,14 @@ if __name__ == '__main__':
     dbhelper = DBhelper()
     dics = {}
     redis_helper = RedisHelper()
-    # dict_list = dbhelper.query("SELECT id,`name` from dictionary where type = 'tag'")
-    # for _item in dict_list:
-    #     dics[_item[1]] = _item[0]
-
-    # get_novel_list_main()
-    get_detail(14239)
+    dict_list = dbhelper.query("SELECT id,`name` from dictionary where type = 'tag'")
+    for _item in dict_list:
+        dics[_item[1]] = _item[0]
+    get_novel_list_main()
+    # length = dbhelper.query_one("select count(1) a from novel")[0]
+    # start = 0
+    # for i in range(0, length, 10):
+    #     values = dbhelper.query("select sourceId,id from novel limit %s,%s", (start, 10))
+    #     start = start + 10
+    #     for item in values:
+    #         get_detail(item[0], item[1])

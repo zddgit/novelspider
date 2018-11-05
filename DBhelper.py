@@ -6,14 +6,14 @@ class DBhelper:
     #     'host': "192.168.10.53",
     #     'user': "mysql",
     #     'password': "password",
-    #     'database': "novel",
+    #     'database': "ntest",
     #     'port': 3306,
     #     'charset': 'utf8',
     # }
     __cnx_kwargs = {
         'host': "localhost",
         'user': "root",
-        'password': "mysql",
+        'password': "zdddmysql",
         'database': "novel",
         'port': 3306,
         'charset': 'utf8',
@@ -62,6 +62,7 @@ class DBhelper:
             cursor = self.conn().cursor()
             cursor.execute(sql, args)
             value = cursor.fetchone()
+            print(sql % args)
         except pymysql.err.DatabaseError as e:
             print('query error!{}'.format(e))
             raise e
@@ -72,8 +73,7 @@ class DBhelper:
 
 if __name__ == "__main__":
     dbhelper = DBhelper()
-    print(dir(dbhelper))
     # novels = dbhelper.query("select * from novel limit 10")
-    chapters = dbhelper.query_one("select id from novel where sourceId = 20424")
-    # print(novels)
-    print(type(chapters[0]))
+    chapters = dbhelper.query("select id from novel limit 10")
+    print(chapters)
+    print(chapters[0][0])

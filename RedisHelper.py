@@ -2,7 +2,7 @@ import redis
 
 
 class RedisHelper:
-    __pool = redis.ConnectionPool( host="192.168.10.53", port=8555)
+    __pool = redis.ConnectionPool(host="192.168.10.53", port=8555)
     __redis = None
 
     def __init__(self):
