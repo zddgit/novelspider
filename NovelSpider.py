@@ -2,8 +2,6 @@ import os
 import random
 import re
 import time
-from RedisHelper import RedisHelper
-import base64
 import zlib
 
 import requests
@@ -11,6 +9,7 @@ from pyquery import PyQuery
 
 from DBhelper import DBhelper
 from NovelInfo import Novel23us
+from RedisHelper import RedisHelper
 
 
 # pageList.bak 小说列表页面网址
@@ -66,25 +65,29 @@ def get_detail(source_id, novel_id):
     file_name = "detail.bak"
     fn = save_to_file(file_name=file_name, save_text=detail_url + "," + str(source_id))
     html = get_html(detail_url, fn=fn)
+    if html is None:
+        return
 
-    # 保存封面图像到redis
+    # 更新数据库小说标签和简介和封面
     cover = get_content(html, "#content img").attr.src
-    imgfn = save_to_file(file_name="img.bak", save_text=cover + "," + str(source_id))
-    bimg = get_html(cover, return_type="binary", fn=imgfn)
-    img = str(base64.b64encode(bimg), encoding="utf-8")
-    redis_helper.get_redis().set("image_{}".format(novel_id), img)
-
-    # 更新数据库小说标签和简介
+    bimg = None
+    if cover is not None:
+        imgfn = save_to_file(file_name="img.bak", save_text=cover + "," + str(source_id))
+        bimg = get_html(cover, return_type="binary", fn=imgfn)
+        # img = str(base64.b64encode(bimg), encoding="utf-8")
+        # redis_helper.get_redis().set("image_{}".format(novel_id), img)
     introduction = get_content(html, "#content dd").eq(3)("p").eq(1).text()
     tag_text = get_content(html, "#content table a").text()
     tag_id = dics.get(tag_text)
-    dbhelper.update(" update novel set tagid = %s,introduction = %s where sourceId = %s ",
-                    (tag_id, introduction, source_id))
+    dbhelper.update(" update novel set tagid = %s,introduction = %s,cover = %s where sourceId = %s ",
+                    (tag_id, introduction, bimg, source_id))
 
     # 具体章节目录
     detail_list_url = get_content(html, "#content .btnlinks a").eq(0).attr.href
     detail_list_fn = save_to_file(file_name="detail_list.bak", save_text=detail_list_url)
     html = get_html(detail_list_url, fn=detail_list_fn)
+    if html is None:
+        return
     chapter_list = get_content(html, "#a_main .bdsub table td")
     chapter_id = 0
 
@@ -180,11 +183,12 @@ if __name__ == '__main__':
     dict_list = dbhelper.query("SELECT id,`name` from dictionary where type = 'tag'")
     for _item in dict_list:
         dics[_item[1]] = _item[0]
-    get_novel_list_main()
+    # get_novel_list_main()
     # length = dbhelper.query_one("select count(1) a from novel")[0]
-    # start = 0
-    # for i in range(0, length, 10):
-    #     values = dbhelper.query("select sourceId,id from novel limit %s,%s", (start, 10))
-    #     start = start + 10
-    #     for item in values:
-    #         get_detail(item[0], item[1])
+    start, end, step = 0, 5000, 500
+    index_start = start
+    for i in range(start, end, step):
+        values = dbhelper.query("select sourceId,id from novel limit %s,%s", (index_start, step))
+        index_start = index_start + step
+        for item in values:
+            get_detail(item[0], item[1])

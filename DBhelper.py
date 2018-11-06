@@ -14,7 +14,7 @@ class DBhelper:
         'host': "localhost",
         'user': "root",
         'password': "zdddmysql",
-        'database': "novel",
+        'database': "novels",
         'port': 3306,
         'charset': 'utf8',
     }
