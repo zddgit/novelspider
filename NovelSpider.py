@@ -199,3 +199,4 @@ if __name__ == '__main__':
         index_start = index_start + step
         for item in values:
             get_detail(item[0], item[1], start_chapter_index)
+            start_chapter_index = None
