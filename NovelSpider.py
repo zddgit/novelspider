@@ -59,7 +59,7 @@ def get_content(html, selector):
         return doc(selector)
 
 
-def get_detail(source_id, novel_id):
+def get_detail(source_id, novel_id, start_index):
     '''根据数据库小说源id生成小说详情页网址，进而获取小说封面，以及章节信息并保存'''
     detail_url = novel_info.get_detail_url(source_id)
     file_name = "detail.bak"
@@ -95,6 +95,8 @@ def get_detail(source_id, novel_id):
     for item in chapter_list:
         # 保存单章信息来源到数据库
         chapter_id = chapter_id + 1
+        if start_index is not None and chapter_id <= start_index:
+            continue
         chapter_url = get_content(item, "a").attr.href
         title = get_content(item, "a").text()
         chapter_text = get_chapter_text(chapter_url, source_id, chapter_id)
@@ -184,11 +186,16 @@ if __name__ == '__main__':
     for _item in dict_list:
         dics[_item[1]] = _item[0]
     # get_novel_list_main()
-    # length = dbhelper.query_one("select count(1) a from novel")[0]
+    novelId, start_chapter_index = dbhelper.query_one(
+        "SELECT novelId,chapterId from chapter ORDER BY novelId DESC,chapterId desc LIMIT 1")
+    start_novel_index = None
     start, end, step = 0, 5000, 500
     index_start = start
+    if novelId is not None:
+        start_novel_index = dbhelper.query_one("SELECT count(1) from novel where id <=%s", novelId)
+        index_start = start + start_novel_index[0] - 1
     for i in range(start, end, step):
         values = dbhelper.query("select sourceId,id from novel limit %s,%s", (index_start, step))
         index_start = index_start + step
         for item in values:
-            get_detail(item[0], item[1])
+            get_detail(item[0], item[1], start_chapter_index)
