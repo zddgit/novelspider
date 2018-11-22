@@ -6,6 +6,7 @@ import zlib
 
 import requests
 from pyquery import PyQuery
+from requests.exceptions import RequestException
 
 from DBhelper import DBhelper
 from NovelInfo import Novel23us
@@ -29,12 +30,17 @@ def save_to_file(file_name, save_text):
     return fn
 
 
-def get_html(url, fn=None, encoding="utf-8", return_type="text"):
+def get_html(url, proxies=None, fn=None, encoding="utf-8", return_type="text"):
     '''获取页面'''
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36"}
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36"}
     try:
-        response = requests.get(url, headers=headers)
+        if proxies is None:
+            print("不通过代理")
+            response = requests.get(url, headers=headers, timeout=3.0, )
+        else:
+            print("通过代理")
+            response = requests.get(url, headers=headers, timeout=10.0, proxies=proxies, )
+
         if response.status_code == 200:
             response.encoding = encoding
             if return_type == "text":
@@ -44,8 +50,8 @@ def get_html(url, fn=None, encoding="utf-8", return_type="text"):
             else:
                 raise ValueError("return_type only uses `text`, `binary` two options")
 
-    except IOError as e:
-        print("网络错误{}".format(e))
+    except RequestException as e:
+        print("网络错误:{}".format(e))
         if fn is not None:
             fn()
 
@@ -91,6 +97,10 @@ def get_detail(source_id, novel_id, start_index):
     chapter_list = get_content(html, "#a_main .bdsub table td")
     chapter_id = 0
 
+    # 如果章节目录超过三千章,删除小说
+    if chapter_list.length > 3000:
+        dbhelper.update(" delete from novel where id = %s ", novel_id)
+        return
     # 循环获取单章
     for item in chapter_list:
         # 保存单章信息来源到数据库
@@ -111,7 +121,8 @@ def get_detail(source_id, novel_id, start_index):
         # else:
         #     # 保存单章信息到redis
         #     redis_helper.get_redis().hset("contents_{}".format(novel_id), chapter_id, chapter_text)
-        time.sleep(random.randint(1, 3))
+
+        time.sleep(random.uniform(0.5, 2.5))
 
 
 def get_chapter_text(chapter_url, source_id, chapter_id):
@@ -200,3 +211,4 @@ if __name__ == '__main__':
         for item in values:
             get_detail(item[0], item[1], start_chapter_index)
             start_chapter_index = None
+
