@@ -122,7 +122,7 @@ def get_detail(source_id, novel_id, start_index):
         #     # 保存单章信息到redis
         #     redis_helper.get_redis().hset("contents_{}".format(novel_id), chapter_id, chapter_text)
 
-        time.sleep(random.uniform(0.5, 2.5))
+        time.sleep(random.uniform(1, 3))
 
 
 def get_chapter_text(chapter_url, source_id, chapter_id):
