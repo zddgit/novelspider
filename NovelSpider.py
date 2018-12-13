@@ -56,13 +56,16 @@ def get_html(url, proxies=None, fn=None, encoding="utf-8", return_type="text"):
             fn()
 
 
-def get_content(html, selector):
+def get_content(html, selector=None):
     '''根据页面元素获取具体值'''
     if isinstance(html, PyQuery):
         return html(selector)
     else:
         doc = PyQuery(html)
-        return doc(selector)
+        if selector is None:
+            return doc
+        else:
+            return doc(selector)
 
 
 def get_detail(source_id, novel_id, start_index):
