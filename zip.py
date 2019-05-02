@@ -1,5 +1,5 @@
 import zlib
-import NovelSpider
+import OldNovelSpider
 import base64
 from RedisHelper import RedisHelper
 
@@ -13,8 +13,8 @@ from RedisHelper import RedisHelper
 # print(s1)
 redis_helper = RedisHelper()
 cover = "https://www.23us.so/files/article/image/29/29702/29702s.jpg"
-imgfn = NovelSpider.save_to_file(file_name="img.bak", save_text=cover + "," + str(121))
-bimg = NovelSpider.get_html(cover, return_type="binary", fn=imgfn)
+imgfn = OldNovelSpider.save_to_file(file_name="img.bak", save_text=cover + "," + str(121))
+bimg = OldNovelSpider.get_html(cover, return_type="binary", fn=imgfn)
 print(len(bimg))
 zlib_a = zlib.compress(bimg)
 print(len(zlib_a))

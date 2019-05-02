@@ -8,7 +8,7 @@ import requests
 from pyquery import PyQuery
 from requests.exceptions import RequestException
 
-from DBhelper import DBhelper
+from NovelSpider.DBhelper import DBhelper
 from NovelInfo import Novel23us
 from RedisHelper import RedisHelper
 

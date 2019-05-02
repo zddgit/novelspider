@@ -10,20 +10,22 @@ class DBhelper:
     #     'port': 3306,
     #     'charset': 'utf8',
     # }
-    __cnx_kwargs = {
-        'host': "localhost",
-        'user': "root",
-        'password': "zdddmysql",
-        'database': "novels",
-        'port': 3306,
-        'charset': 'utf8',
-    }
+    __database_config = {}
     __conn = None
+
+    def __init__(self, host: str, user: str, password: str, database: str, port=3306, charset='utf8'):
+        self.__database_config['host'] = host
+        self.__database_config['user'] = user
+        self.__database_config['password'] = password
+        self.__database_config['database'] = database
+        self.__database_config['port'] = port
+        self.__database_config['charset'] = charset
+        print(self.__database_config)
 
     def conn(self):
         if self.__conn is not None:
             return self.__conn
-        self.__conn = pymysql.connect(**self.__cnx_kwargs)
+        self.__conn = pymysql.connect(**self.__database_config)
         return self.__conn
 
     def update(self, sql, args=()):
@@ -72,8 +74,7 @@ class DBhelper:
 
 
 if __name__ == "__main__":
-    dbhelper = DBhelper()
-    # novels = dbhelper.query("select * from novel limit 10")
-    chapters = dbhelper.query("select id from novel limit 10")
+    dbhelper = DBhelper(host="localhost", user='root', password='mysql', database='novels')
+    chapters = dbhelper.query("select id from dictionary limit 10")
     print(chapters)
     print(chapters[0][0])
