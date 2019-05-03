@@ -78,14 +78,23 @@ class NovelResource:
         if self.select_category_page_count is None:
             self.category_page_count = 1500
         else:
+            self.category_page_count = self.get_page_count(self, html)
+            # page_count = SpiderTools.get_pyquery_content(html, self.select_category_page_count)
+            # self.category_page_count = int(page_count)
+
+    # 默认获取单个类别总页数的方法
+    def get_page_count(self, html):
+        try:
             page_count = SpiderTools.get_pyquery_content(html, self.select_category_page_count)
-            self.category_page_count = int(page_count)
+            return int(page_count)
+        except BaseException:
+            raise ValueError("请重写此方法，默认方法无法获取count")
 
     # 请重写
     def templet_format(self, target, current_category_key):
         raise ValueError("请重写此方法，以便生成自己的模板url")
 
-    def chapter_url(self, target_url, mulu_url=None ):
+    def chapter_url(self, target_url, mulu_url=None):
         raise ValueError("请重写此方法，以便生成自己的章节url")
 
     # 小说列表简要信息保存
@@ -123,13 +132,14 @@ class NovelResource:
                     novelname = SpiderTools.get_pyquery_content(item, SpiderTools.getRes().select_novel_name).text()
                     if novelname is None or novelname == '':
                         continue
-                    url = SpiderTools.getRes().host + SpiderTools.get_pyquery_content(item,
-                                                                                      SpiderTools.getRes().select_novel_name).attr(
-                        "href")
+                    url = SpiderTools.getRes().host + \
+                          SpiderTools.get_pyquery_content(item, SpiderTools.getRes().select_novel_name).attr("href")
                     author = \
                     SpiderTools.get_pyquery_content(item, SpiderTools.getRes().select_novel_author).text().split(" ")[0]
                     insertnovels.append(str((novelname, url, author, SpiderTools.getRes().source_id)))
                 # 小说简要信息保存到数据库
+                if len(insertnovels) == 0:
+                    break
                 sql = "insert into novel (`name`,`source`,`author`,`sourceid`) values "
                 sql = sql + ",".join(insertnovels) + " on DUPLICATE key update source = values(source)"
                 dbhelper.update(sql)

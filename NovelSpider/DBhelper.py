@@ -37,9 +37,8 @@ class DBhelper:
             self.__conn.commit()
             print(sql % args)
         except pymysql.err.DatabaseError as e:
-            print('update error!{}'.format(e))
+            print('update error!{} \n {}'.format(e, sql % args))
             self.__conn.rollback()
-            raise e
         finally:
             cursor.close()
         return update_count
@@ -52,8 +51,7 @@ class DBhelper:
             value = cursor.fetchall()
             print(sql % args)
         except pymysql.err.DatabaseError as e:
-            print('query error!{}'.format(e))
-            raise e
+            print('query error!{} \n {}'.format(e, sql % args))
         finally:
             cursor.close()
         return value
@@ -66,8 +64,7 @@ class DBhelper:
             value = cursor.fetchone()
             print(sql % args)
         except pymysql.err.DatabaseError as e:
-            print('query error!{}'.format(e))
-            raise e
+            print('query error!{} \n {}'.format(e, sql % args))
         finally:
             cursor.close()
         return value

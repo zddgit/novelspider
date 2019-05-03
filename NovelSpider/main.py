@@ -1,4 +1,5 @@
 import sys
+import re
 
 from NovelSpider import SpiderTools
 
@@ -21,6 +22,12 @@ def quanwenyuedu_chapter_url(target: NovelResource, target_url, mulu_url):
     return str(mulu_url).replace(target.list_url_template, "") + target_url
 
 
+def quanwenyuedu_get_page_count(target: NovelResource, html):
+    page_count_txt = SpiderTools.get_pyquery_content(html, target.select_category_page_count)
+    p = re.findall('\\d+', page_count_txt.text())
+    return p[1]
+
+
 duyidu = NovelResource(host="du1du.org", home_page="http://du1du.org/shuku.htm",
                        source_id=1, select_category=".container .mb20 li a", encoding="gbk",
                        category_template='{}.htm',
@@ -39,6 +46,7 @@ duyidu.chapter_url = duyidu_chapter_url
 
 quanwenyuedu = NovelResource(host='www.quanwenyuedu.io', home_page="http://www.quanwenyuedu.io/", source_id=2,
                              select_category=".nav a", encoding="utf-8", category_template='-{}.html',
+                             select_category_page_count=".box > .list_page >span:eq(1)",
                              select_novel_line='.box .top',
                              select_novel_name='h3 a',
                              select_novel_author='p span',
@@ -51,6 +59,7 @@ quanwenyuedu = NovelResource(host='www.quanwenyuedu.io', home_page="http://www.q
 
 quanwenyuedu.templet_format = quanwenyuedu_templet_format
 quanwenyuedu.chapter_url = quanwenyuedu_chapter_url
+quanwenyuedu.get_page_count = quanwenyuedu_get_page_count
 
 SpiderTools.addRes(duyidu.source_id, duyidu)
 SpiderTools.addRes(quanwenyuedu.source_id, quanwenyuedu)
