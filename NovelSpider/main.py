@@ -25,7 +25,7 @@ def quanwenyuedu_chapter_url(target: NovelResource, target_url, mulu_url):
 def quanwenyuedu_get_page_count(target: NovelResource, html):
     page_count_txt = SpiderTools.get_pyquery_content(html, target.select_category_page_count)
     p = re.findall('\\d+', page_count_txt.text())
-    return p[1]
+    return int(p[1])
 
 
 duyidu = NovelResource(host="du1du.org", home_page="http://du1du.org/shuku.htm",
