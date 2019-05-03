@@ -1,0 +1,17 @@
+INSERT INTO `dictionary`(`id`, `name`, `type`, `status`) VALUES (1, '奇幻玄幻', 'tag', 0);
+INSERT INTO `dictionary`(`id`, `name`, `type`, `status`) VALUES (2, '武侠仙侠', 'tag', 0);
+INSERT INTO `dictionary`(`id`, `name`, `type`, `status`) VALUES (3, '都市言情', 'tag', 0);
+INSERT INTO `dictionary`(`id`, `name`, `type`, `status`) VALUES (4, '历史军事', 'tag', 0);
+INSERT INTO `dictionary`(`id`, `name`, `type`, `status`) VALUES (5, '网游竞技', 'tag', 0);
+INSERT INTO `dictionary`(`id`, `name`, `type`, `status`) VALUES (6, '科幻小说', 'tag', 0);
+INSERT INTO `dictionary`(`id`, `name`, `type`, `status`) VALUES (7, '恐怖灵异', 'tag', 0);
+INSERT INTO `dictionary`(`id`, `name`, `type`, `status`) VALUES (8, '女生小说', 'tag', 0);
+INSERT INTO `dictionary`(`id`, `name`, `type`, `status`) VALUES (9, '其他小说', 'tag', 0);
+INSERT INTO `dictionary`(`id`, `name`, `type`, `status`) VALUES (10, '全本小说', 'tag', 0);
+INSERT INTO `dictionary`(`id`, `name`, `type`, `status`) VALUES (11, '我的账户', 'setting', 0);
+INSERT INTO `dictionary`(`id`, `name`, `type`, `status`) VALUES (12, '签到', 'setting', 0);
+INSERT INTO `dictionary`(`id`, `name`, `type`, `status`) VALUES (13, '我的私信', 'setting', 0);
+INSERT INTO `dictionary`(`id`, `name`, `type`, `status`) VALUES (14, '使用协议', 'setting', 0);
+INSERT INTO `dictionary`(`id`, `name`, `type`, `status`) VALUES (15, '反馈', 'setting', 0);
+INSERT INTO `dictionary`(`id`, `name`, `type`, `status`) VALUES (16, '当前版本', 'setting', 0);
+INSERT INTO `dictionary`(`id`, `name`, `type`, `status`) VALUES (17, '嗯，我的梦想是被读者的赞赏包养~', 'setting', 0);
