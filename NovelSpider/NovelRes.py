@@ -210,10 +210,14 @@ class NovelResource:
 
     # 简单保存章节来源，与生成章节id
     def get_chapters_save(self, url, novel_id, start_chapter_index):
+        dbhelper = DBhelper(host="localhost", user='root', password='mysql', database='novels')
         novel_mulu_fn = SpiderTools.save_to_file(file_name="novel_mulu.bak", save_text=url + "," + str(novel_id))
         html = SpiderTools.get_html(url, encoding=SpiderTools.getRes().encoding, network_err_fn=novel_mulu_fn)
+        if html is None:
+            rollback_sql = 'update novel set tagid = null where id = %s'
+            dbhelper.update(rollback_sql, (novel_id))
+            return
         chapters = SpiderTools.get_pyquery_content(html, SpiderTools.getRes().select_chapter)
-        dbhelper = DBhelper(host="localhost", user='root', password='mysql', database='novels')
         insertchapters = []
         for chapter_id in range(0, len(chapters), 1):
             title = chapters.eq(chapter_id).text()
