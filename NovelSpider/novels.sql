@@ -83,8 +83,9 @@ CREATE TABLE `novel` (
   `status` int(2) DEFAULT '0' COMMENT '状态上新热门',
   `sourceid` int(2) DEFAULT '1' COMMENT '来源id',
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY `index_name_author` (`name`,`author`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+  UNIQUE KEY `index_name_author` (`name`,`author`),
+  KEY `novel_tagid_idx` (`tagid`) USING BTREE
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC
 
 
 DROP TABLE IF EXISTS `user`;
