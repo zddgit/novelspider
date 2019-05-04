@@ -191,8 +191,10 @@ class NovelResource:
                 introduction = SpiderTools.get_pyquery_content(html,
                                                                SpiderTools.getRes().select_novel_introduction).text()
                 # 此函式用于保存封面获取失败
-                img_fn = SpiderTools.save_to_file("img.bak", cover + "," + str(novel_id))
-                bconver = SpiderTools.get_html(cover, return_type="binary", network_err_fn=img_fn)
+                bconver = None
+                if cover is not None:
+                    img_fn = SpiderTools.save_to_file("img.bak", cover + "," + str(novel_id))
+                    bconver = SpiderTools.get_html(cover, return_type="binary", network_err_fn=img_fn)
                 # 获取tagId
                 tag_id = 0
                 for t in tags:
