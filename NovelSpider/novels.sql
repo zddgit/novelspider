@@ -1,27 +1,7 @@
--- MySQL dump 10.13  Distrib 5.5.62, for Win64 (AMD64)
---
--- Host: localhost    Database: novels
--- ------------------------------------------------------
--- Server version	8.0.15
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8 */;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
-/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-
---
--- Table structure for table `app`
---
 
 DROP TABLE IF EXISTS `app`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `app` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `download` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
@@ -30,16 +10,11 @@ CREATE TABLE `app` (
   `releaseTime` datetime DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `chapter`
---
 
-DROP TABLE IF EXISTS `chapter`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `chapter` (
+DROP TABLE IF EXISTS `chapter_1`;
+
+CREATE TABLE `chapter_1` (
   `novelId` int(11) NOT NULL,
   `chapterId` int(11) NOT NULL,
   `title` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
@@ -51,15 +26,24 @@ CREATE TABLE `chapter` (
   KEY `index_novelId` (`novelId`) USING BTREE,
   KEY `chapter_flag_idx` (`flag`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `dictionary`
---
+DROP TABLE IF EXISTS `chapter_2`;
+
+CREATE TABLE `chapter_2` (
+  `novelId` int(11) NOT NULL,
+  `chapterId` int(11) NOT NULL,
+  `title` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `source` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '目标url',
+  `content` blob,
+  `sourceid` int(2) DEFAULT NULL COMMENT '来源',
+  `flag` int(1) DEFAULT '0' COMMENT '0：未更新内容，1:更新了',
+  PRIMARY KEY (`novelId`,`chapterId`) USING BTREE,
+  KEY `index_novelId` (`novelId`) USING BTREE,
+  KEY `chapter_flag_idx` (`flag`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
 
 DROP TABLE IF EXISTS `dictionary`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `dictionary` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
@@ -67,15 +51,10 @@ CREATE TABLE `dictionary` (
   `status` int(11) DEFAULT '0',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `message`
---
 
 DROP TABLE IF EXISTS `message`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `message` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `feedbackUserId` int(11) DEFAULT NULL COMMENT '反馈用户id',
@@ -88,15 +67,10 @@ CREATE TABLE `message` (
   PRIMARY KEY (`id`) USING BTREE,
   KEY `index_feedback_user` (`feedbackUserId`,`read`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `novel`
---
 
 DROP TABLE IF EXISTS `novel`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `novel` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT ' ',
   `name` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
@@ -111,15 +85,10 @@ CREATE TABLE `novel` (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `index_name_author` (`name`,`author`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `user`
---
 
 DROP TABLE IF EXISTS `user`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `user` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `nick` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
@@ -136,19 +105,4 @@ CREATE TABLE `user` (
   UNIQUE KEY `index_email` (`email`) USING BTREE,
   UNIQUE KEY `index_phone` (`phone`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Dumping routines for database 'novels'
---
-/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
-
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
-
--- Dump completed on 2019-05-03 15:40:00

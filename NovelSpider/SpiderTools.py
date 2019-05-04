@@ -43,7 +43,7 @@ def get_html(url: str, proxies=None, network_err_fn=None, encoding="utf-8", retu
                 raise ValueError("return_type only uses `text`, `binary` two options")
         else:
             raise ValueError("url : %s ,status_code : %s" % (url, response.status_code))
-    except RequestException as e:
+    except BaseException as e:
         print("network err,{}".format(e))
         if network_err_fn is not None:
             network_err_fn()
