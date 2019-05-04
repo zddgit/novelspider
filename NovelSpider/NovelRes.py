@@ -188,8 +188,7 @@ class NovelResource:
                 # 类型
                 tag = str(SpiderTools.get_pyquery_content(html, SpiderTools.getRes().select_novel_tag).text())[0:2]
                 # 简介
-                introduction = SpiderTools.get_pyquery_content(html,
-                                                               SpiderTools.getRes().select_novel_introduction).text()
+                introduction = SpiderTools.get_pyquery_content(html, SpiderTools.getRes().select_novel_introduction).text()
                 # 此函式用于保存封面获取失败
                 bconver = None
                 if cover is not None:
@@ -228,8 +227,7 @@ class NovelResource:
                 continue
             insertchapters.append(str((novel_id, chapter_id + 1, str(title).replace("%", "%%"), source, SpiderTools.sourceid)))
         sql = "INSERT into chapter_%s (novelId,chapterId,title,source,sourceid) VALUES " % SpiderTools.sourceid
-        sql = sql + ",".join(insertchapters) + \
-              " on DUPLICATE key update source = values(source),title = values(title),sourceid = values(sourceid)"
+        sql = sql + ",".join(insertchapters)
         dbhelper.update(sql)
 
     # 抓取具体章节内容
