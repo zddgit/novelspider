@@ -152,7 +152,7 @@ class NovelResource:
         tag_list = dbhelper.query("SELECT id,`name` from dictionary where type = 'tag'")
         for _item in tag_list:
             tags[_item[1]] = _item[0]
-        # 获取上一次更新的地址
+        # 获取上一次更新的地址  todo 这个地方查询上次更新到你那里的需要修改，直接查询novel表tagid为null的开始
         lastupdate = dbhelper.query_one("SELECT id,sourceid from novel  where tagid is not null order by id desc LIMIT 1 ")
         if lastupdate is None:
             lastupdate = (1, 1)
@@ -228,7 +228,8 @@ class NovelResource:
                 continue
             insertchapters.append(str((novel_id, chapter_id + 1, str(title).replace("%", "%%"), source, SpiderTools.sourceid)))
         sql = "INSERT into chapter_%s (novelId,chapterId,title,source,sourceid) VALUES " % SpiderTools.sourceid
-        sql = sql + ",".join(insertchapters)
+        sql = sql + ",".join(insertchapters) + \
+              " on DUPLICATE key update source = values(source),title = values(title),sourceid = values(sourceid)"
         dbhelper.update(sql)
 
     # 抓取具体章节内容
