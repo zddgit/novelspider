@@ -70,6 +70,9 @@ class DBhelper:
         return value
 
 
+# default_dbhelper = DBhelper(host="localhost", user='root', password='mysql', database='novels')
+default_dbhelper = DBhelper(host="192.168.10.53", user='mysql', password='password', database='ntest')
+
 if __name__ == "__main__":
     dbhelper = DBhelper(host="localhost", user='root', password='mysql', database='novels')
     chapters = dbhelper.query("select id from dictionary limit 10")

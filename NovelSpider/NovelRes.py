@@ -5,7 +5,7 @@ import zlib
 from pyquery import PyQuery
 
 from NovelSpider import SpiderTools
-from NovelSpider.DBhelper import DBhelper
+from NovelSpider.DBhelper import default_dbhelper
 
 
 class NovelResource:
@@ -99,7 +99,6 @@ class NovelResource:
 
     # 小说列表简要信息保存
     def novel_simple_save(self):
-        dbhelper = DBhelper(host="localhost", user='root', password='mysql', database='novels')
         self.__get_category_list()
         # 按类别循环获取
         for key in self.category_list:
@@ -142,35 +141,20 @@ class NovelResource:
                     break
                 sql = "insert into novel (`name`,`source`,`author`,`sourceid`) values "
                 sql = sql + ",".join(insertnovels) + " on DUPLICATE key update source = values(source)"
-                dbhelper.update(sql)
+                default_dbhelper.update(sql)
                 time.sleep(random.uniform(1, 3))
 
     # 小说详情信息保存
     def novel_detail_save(self):
-        dbhelper = DBhelper(host="localhost", user='root', password='mysql', database='novels')
         tags = {}
-        tag_list = dbhelper.query("SELECT id,`name` from dictionary where type = 'tag'")
+        tag_list = default_dbhelper.query("SELECT id,`name` from dictionary where type = 'tag'")
         for _item in tag_list:
             tags[_item[1]] = _item[0]
-        # 获取上一次更新的地址  todo 这个地方查询上次更新到你那里的需要修改，直接查询novel表tagid为null的开始
-        lastupdate = dbhelper.query_one("SELECT id,sourceid from novel  where tagid is not null order by id desc LIMIT 1 ")
-        if lastupdate is None:
-            lastupdate = (1, 1)
-        result = dbhelper.query_one( "SELECT novelId,chapterId from chapter_%s ORDER BY novelId DESC,chapterId desc LIMIT 1" % lastupdate[1])
-        novelId = lastupdate[0]
-        start_chapter_index = None
-        if result is not None:
-            # novelId = result[0]
-            start_chapter_index = result[1]
-        count = dbhelper.query_one("SELECT count(1) from novel")
-        start, end, step = 0, int(count[0]), 500
-        index_start = start
-        if novelId is not None:
-            start_novel_index = dbhelper.query_one("SELECT count(1) from novel where id <=%s", novelId)
-            index_start = start + start_novel_index[0] - 1
-        for i in range(start, end, step):
-            values = dbhelper.query("select source,id,sourceid from novel limit %s,%s", (index_start, step))
-            index_start = index_start + step
+        # 获取需要更新的小说
+        count_sql = "select count(1) from novel where tagid is null limit 1"
+        count = default_dbhelper.query_one(count_sql)
+        while int(count[0]) > 0:
+            values = default_dbhelper.query("select source,id,sourceid from novel where tagid is null limit 0,500")
             if values is None or len(values) == 0:
                 break
             for item in values:
@@ -178,9 +162,7 @@ class NovelResource:
                 novel_id = item[1]
                 SpiderTools.sourceid = item[2]
                 # 保存小说详细信息
-                detail_fn = SpiderTools.save_to_file("detail.bak", novel_home_url + "," + str(novel_id))
-                html = SpiderTools.get_html(novel_home_url, encoding=SpiderTools.getRes().encoding,
-                                            network_err_fn=detail_fn)
+                html = SpiderTools.get_html(novel_home_url, encoding=SpiderTools.getRes().encoding)
                 if html is None:
                     continue
                 # 封面
@@ -189,9 +171,9 @@ class NovelResource:
                 tag = str(SpiderTools.get_pyquery_content(html, SpiderTools.getRes().select_novel_tag).text())[0:2]
                 # 简介
                 introduction = SpiderTools.get_pyquery_content(html, SpiderTools.getRes().select_novel_introduction).text()
-                # 此函式用于保存封面获取失败
                 bconver = None
                 if cover is not None:
+                    # 此函式用于保存封面获取失败
                     img_fn = SpiderTools.save_to_file("img.bak", cover + "," + str(novel_id))
                     bconver = SpiderTools.get_html(cover, return_type="binary", network_err_fn=img_fn)
                 # 获取tagId
@@ -200,41 +182,35 @@ class NovelResource:
                     if str(t).find(tag) > -1:
                         tag_id = tags[t]
                         break
-                dbhelper.update(" update novel set tagid = %s,introduction = %s,cover = %s where id = %s ",
+                time.sleep(random.uniform(0.5, 1.5))
+                # 获取章节列表并保存,再更新novel
+                self.get_chapters_save(novel_home_url + SpiderTools.getRes().list_url_template, novel_id)
+                default_dbhelper.update(" update novel set tagid = %s,introduction = %s,cover = %s where id = %s ",
                                 (tag_id, introduction, bconver, novel_id))
                 time.sleep(random.uniform(0.5, 1.5))
-                # 获取章节列表并保存
-                self.get_chapters_save(novel_home_url + SpiderTools.getRes().list_url_template, novel_id,
-                                       start_chapter_index)
-                time.sleep(random.uniform(0.5, 1.5))
-                start_chapter_index = None
+            count = default_dbhelper.query_one(count_sql)
+
 
     # 简单保存章节来源，与生成章节id
-    def get_chapters_save(self, url, novel_id, start_chapter_index):
-        dbhelper = DBhelper(host="localhost", user='root', password='mysql', database='novels')
+    def get_chapters_save(self, url, novel_id):
         novel_mulu_fn = SpiderTools.save_to_file(file_name="novel_mulu.bak", save_text=url + "," + str(novel_id))
         html = SpiderTools.get_html(url, encoding=SpiderTools.getRes().encoding, network_err_fn=novel_mulu_fn)
         if html is None:
-            rollback_sql = 'update novel set tagid = null where id = %s'
-            dbhelper.update(rollback_sql, (novel_id))
             return
         chapters = SpiderTools.get_pyquery_content(html, SpiderTools.getRes().select_chapter)
         insertchapters = []
         for chapter_id in range(0, len(chapters), 1):
             title = chapters.eq(chapter_id).text()
             source = SpiderTools.getRes().chapter_url(SpiderTools.getRes(), chapters.eq(chapter_id).attr("href"), url)
-            if start_chapter_index is not None and chapter_id <= start_chapter_index:
-                continue
             insertchapters.append(str((novel_id, chapter_id + 1, str(title).replace("%", "%%"), source, SpiderTools.sourceid)))
         sql = "INSERT into chapter_%s (novelId,chapterId,title,source,sourceid) VALUES " % SpiderTools.sourceid
         sql = sql + ",".join(insertchapters)
-        dbhelper.update(sql)
+        default_dbhelper.update(sql)
 
     # 抓取具体章节内容
     def novel_chapter_detail_save(self):
-        dbhelper = DBhelper(host="localhost", user='root', password='mysql', database='novels')
         sql = "select novelId,chapterId,source,sourceid from chapter where flag = 0 limit 100"
-        result = dbhelper.query(sql)
+        result = default_dbhelper.query(sql)
         while result is not None and len(result) > 0:
             updatesql = "update chapter set flag = 1 ,content = %s where novelId = %s and chapterId = %s"
             for item in result:
@@ -247,9 +223,9 @@ class NovelResource:
                 content.remove("script")
                 text = content.text().encode("utf-8", errors="ignore")
                 zlib_chapter_text = zlib.compress(text)
-                dbhelper.update(updatesql, (zlib_chapter_text, novelId, chapterId))
+                default_dbhelper.update(updatesql, (zlib_chapter_text, novelId, chapterId))
                 time.sleep(random.uniform(1, 3))
-            result = dbhelper.query(sql)
+            result = default_dbhelper.query(sql)
 
     # 开始抓取
     def start(self, flag):

@@ -79,4 +79,6 @@ if __name__ == '__main__':
             SpiderTools.sourceid = 2
             quanwenyuedu.start(int(sys.argv[2]))
         else:
-            raise ValueError("参数个数错误！")
+            raise ValueError("参数取值错误")
+    else:
+        raise ValueError("参数个数错误！")
