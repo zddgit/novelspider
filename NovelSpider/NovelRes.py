@@ -184,7 +184,9 @@ class NovelResource:
                         break
                 time.sleep(random.uniform(0.5, 1.5))
                 # 获取章节列表并保存,再更新novel
-                self.get_chapters_save(novel_home_url + SpiderTools.getRes().list_url_template, novel_id)
+                is_update = self.get_chapters_save(novel_home_url + SpiderTools.getRes().list_url_template, novel_id)
+                if is_update == 0:
+                    continue
                 default_dbhelper.update(" update novel set tagid = %s,introduction = %s,cover = %s where id = %s ",
                                 (tag_id, introduction, bconver, novel_id))
                 time.sleep(random.uniform(0.5, 1.5))
@@ -196,7 +198,7 @@ class NovelResource:
         novel_mulu_fn = SpiderTools.save_to_file(file_name="novel_mulu.bak", save_text=url + "," + str(novel_id))
         html = SpiderTools.get_html(url, encoding=SpiderTools.getRes().encoding, network_err_fn=novel_mulu_fn)
         if html is None:
-            return
+            return 0
         chapters = SpiderTools.get_pyquery_content(html, SpiderTools.getRes().select_chapter)
         insertchapters = []
         for chapter_id in range(0, len(chapters), 1):
