@@ -9,38 +9,10 @@ CREATE TABLE `app` (
   `type` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
   `releaseTime` datetime DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
 
 
-DROP TABLE IF EXISTS `chapter_1`;
 
-CREATE TABLE `chapter_1` (
-  `novelId` int(11) NOT NULL,
-  `chapterId` int(11) NOT NULL,
-  `title` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
-  `source` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '目标url',
-  `content` blob,
-  `sourceid` int(2) DEFAULT NULL COMMENT '来源',
-  `flag` int(1) DEFAULT '0' COMMENT '0：未更新内容，1:更新了',
-  PRIMARY KEY (`novelId`,`chapterId`) USING BTREE,
-  KEY `index_novelId` (`novelId`) USING BTREE,
-  KEY `chapter_flag_idx` (`flag`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
-
-DROP TABLE IF EXISTS `chapter_2`;
-
-CREATE TABLE `chapter_2` (
-  `novelId` int(11) NOT NULL,
-  `chapterId` int(11) NOT NULL,
-  `title` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
-  `source` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '目标url',
-  `content` blob,
-  `sourceid` int(2) DEFAULT NULL COMMENT '来源',
-  `flag` int(1) DEFAULT '0' COMMENT '0：未更新内容，1:更新了',
-  PRIMARY KEY (`novelId`,`chapterId`) USING BTREE,
-  KEY `index_novelId` (`novelId`) USING BTREE,
-  KEY `chapter_flag_idx` (`flag`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
 
 DROP TABLE IF EXISTS `dictionary`;
 
@@ -50,7 +22,7 @@ CREATE TABLE `dictionary` (
   `type` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `status` int(11) DEFAULT '0',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ;
 
 
 DROP TABLE IF EXISTS `message`;
@@ -66,7 +38,7 @@ CREATE TABLE `message` (
   `read` tinyint(4) DEFAULT NULL COMMENT '0未读1已读',
   PRIMARY KEY (`id`) USING BTREE,
   KEY `index_feedback_user` (`feedbackUserId`,`read`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
 
 
 DROP TABLE IF EXISTS `novel`;
@@ -85,7 +57,7 @@ CREATE TABLE `novel` (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `index_name_author` (`name`,`author`),
   KEY `novel_tagid_idx` (`tagid`) USING BTREE
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 
 
 
 DROP TABLE IF EXISTS `user`;
@@ -105,5 +77,14 @@ CREATE TABLE `user` (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `index_email` (`email`) USING BTREE,
   UNIQUE KEY `index_phone` (`phone`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
+
+DROP TABLE IF EXISTS `router`;
+# 分表信息
+CREATE TABLE `router` (
+  `sourceid` int(11) DEFAULT NULL,
+  `novel_id_start` int(11) DEFAULT NULL,
+  `novel_id_end` int(11) DEFAULT NULL,
+  `table_name` varchar(100) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

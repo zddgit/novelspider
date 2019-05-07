@@ -3,8 +3,29 @@ from pyquery import PyQuery
 from requests import RequestException
 from NovelSpider.NovelRes import NovelResource
 
+# 具体使用的来源信息
 resource = {}
+# 运行期间数据来源
 sourceid = 0
+# 运行期间要插入的表
+table_name = ""
+# 运行期间对应表所存在的数据总量
+total = {}
+# 分表创建表的语句
+creat_chapter_sql = '''
+CREATE TABLE `chapter_%s_%s` (
+  `novelId` int(11) NOT NULL,
+  `chapterId` int(11) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `source` varchar(255) DEFAULT NULL COMMENT '目标url',
+  `content` blob,
+  `sourceid` int(2) DEFAULT NULL COMMENT '来源',
+  `flag` int(1) DEFAULT '0' COMMENT '0：未更新内容，1:更新了',
+  PRIMARY KEY (`novelId`,`chapterId`) USING BTREE,
+  KEY `index_novelId` (`novelId`) USING BTREE,
+  KEY `chapter_flag_idx` (`flag`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+'''
 
 
 def addRes(key: int, value: NovelResource):

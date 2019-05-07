@@ -207,9 +207,38 @@ class NovelResource:
             title = chapters.eq(chapter_id).text()
             source = SpiderTools.getRes().chapter_url(SpiderTools.getRes(), chapters.eq(chapter_id).attr("href"), url)
             insertchapters.append(str((novel_id, chapter_id + 1, str(title).replace("%", "%%"), source, SpiderTools.sourceid)))
-        sql = "INSERT into chapter_%s (novelId,chapterId,title,source,sourceid) VALUES " % SpiderTools.sourceid
+        self.init_chapter_table(novel_id)
+        sql = "INSERT into %s (novelId,chapterId,title,source,sourceid) VALUES " % SpiderTools.table_name
         sql = sql + ",".join(insertchapters)
         default_dbhelper.update(sql)
+        SpiderTools.total[SpiderTools.sourceid] = SpiderTools.total[SpiderTools.sourceid] + len(insertchapters)
+        if SpiderTools.total[SpiderTools.sourceid] > 5000000:
+            default_dbhelper.update("update router set novel_id_end = %s where sourceid = %s and novel_id_end is null",
+                                    (novel_id, SpiderTools.sourceid))
+
+    # 初始化将要保存的表信息
+    def init_chapter_table(self, novel_id):
+        sql = "SELECT `table_name` from router where novel_id_start <= %s and novel_id_end is NULL and sourceid = %s"
+        total = default_dbhelper.query_one(sql, (novel_id, SpiderTools.sourceid))
+        if total is None:
+            count = default_dbhelper.query_one("select count(1) from router where sourceid = %s",(SpiderTools.sourceid))
+            if count is None:
+                count = 0
+            default_dbhelper.update(SpiderTools.creat_chapter_sql, (SpiderTools.sourceid, count[0]))
+            SpiderTools.table_name = 'chapter_%s_%s' % (SpiderTools.sourceid, count[0])
+            SpiderTools.total[SpiderTools.sourceid] = 0
+            default_dbhelper.update("insert into router (`sourceid`,`novel_id_start`,`table_name`) values (%s,%s,%s)",
+                                    (SpiderTools.sourceid, novel_id, SpiderTools.table_name))
+        else:
+            SpiderTools.table_name = total[0]
+            result = default_dbhelper.query_one("select count(1) from %s", (SpiderTools.table_name))
+            if result is None:
+                SpiderTools.total[SpiderTools.sourceid] = 0
+            else:
+                SpiderTools.total[SpiderTools.sourceid] = result[0]
+
+
+
 
     # 抓取具体章节内容
     def novel_chapter_detail_save(self):
