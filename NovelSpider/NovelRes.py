@@ -202,6 +202,8 @@ class NovelResource:
         chapters = SpiderTools.get_pyquery_content(html, SpiderTools.getRes().select_chapter)
         insertchapters = []
         for chapter_id in range(0, len(chapters), 1):
+            if chapter_id > 2000:
+                break
             title = chapters.eq(chapter_id).text()
             source = SpiderTools.getRes().chapter_url(SpiderTools.getRes(), chapters.eq(chapter_id).attr("href"), url)
             insertchapters.append(str((novel_id, chapter_id + 1, str(title).replace("%", "%%"), source, SpiderTools.sourceid)))
