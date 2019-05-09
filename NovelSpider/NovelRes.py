@@ -218,9 +218,18 @@ class NovelResource:
 
     # 初始化将要保存的表信息
     def init_chapter_table(self, novel_id):
+
         sql = "SELECT `table_name` from router where novel_id_start <= %s and novel_id_end is NULL and sourceid = %s"
         total = default_dbhelper.query_one(sql, (novel_id, SpiderTools.sourceid))
+        # 两种情况为None 1.novelId小于novel_id_start 2. novel_id_end 不为null
         if total is None:
+            # 第一种情况，这里是检查 重启以后，相应的novelId应该处于那个表中
+            select_sql = "SELECT `table_name` from router where novel_id_start <= %s and novel_id_end >= %s and sourceid = %s"
+            select_table = default_dbhelper.query_one(select_sql, (novel_id, novel_id, SpiderTools.sourceid))
+            if select_table is not None:
+                SpiderTools.table_name = select_table[0]
+                SpiderTools.total[SpiderTools.sourceid] = 0
+                return
             count = default_dbhelper.query_one("select count(1) from router where sourceid = %s",(SpiderTools.sourceid))
             if count is None:
                 count = 0
@@ -230,12 +239,15 @@ class NovelResource:
             default_dbhelper.update("insert into router (`sourceid`,`novel_id_start`,`table_name`) values (%s,%s,%s)",
                                     (SpiderTools.sourceid, novel_id, SpiderTools.table_name))
         else:
+            if SpiderTools.table_name != total[0]:
+                SpiderTools.total[SpiderTools.sourceid] = None
             SpiderTools.table_name = total[0]
-            result = default_dbhelper.query_one("select count(1) from {}".format(SpiderTools.table_name))
-            if result is None:
-                SpiderTools.total[SpiderTools.sourceid] = 0
-            else:
-                SpiderTools.total[SpiderTools.sourceid] = result[0]
+            if SpiderTools.total[SpiderTools.sourceid] is None:
+                result = default_dbhelper.query_one("select count(1) from {}".format(SpiderTools.table_name))
+                if result is None:
+                    SpiderTools.total[SpiderTools.sourceid] = 0
+                else:
+                    SpiderTools.total[SpiderTools.sourceid] = result[0]
 
 
 
