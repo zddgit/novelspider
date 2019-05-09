@@ -255,23 +255,26 @@ class NovelResource:
 
     # 抓取具体章节内容
     def novel_chapter_detail_save(self):
-        sql = "select novelId,chapterId,source,sourceid from chapter where flag = 0 limit 100"
-        result = default_dbhelper.query(sql)
-        while result is not None and len(result) > 0:
-            updatesql = "update chapter set flag = 1 ,content = %s where novelId = %s and chapterId = %s"
-            for item in result:
-                novelId, chapterId, source, sourceid = item[0], item[1], item[2], item[3]
-                SpiderTools.sourceid = sourceid
-                html = SpiderTools.get_html(source, encoding=SpiderTools.getRes().encoding,
-                                            header_host=SpiderTools.getRes().host)
-
-                content = SpiderTools.get_pyquery_content(html, SpiderTools.getRes().select_chapter_content)
-                content.remove("script")
-                text = content.text().encode("utf-8", errors="ignore")
-                zlib_chapter_text = zlib.compress(text)
-                default_dbhelper.update(updatesql, (zlib_chapter_text, novelId, chapterId))
-                time.sleep(random.uniform(1, 3))
+        sql_tables = "SELECT `table_name` from router where sourceid = %s"
+        tables = default_dbhelper.query(sql_tables,(SpiderTools.sourceid))
+        for table_name in tables:
+            sql = "select novelId,chapterId,source,sourceid from {} where flag = 0 limit 100".format(table_name)
             result = default_dbhelper.query(sql)
+            while result is not None and len(result) > 0:
+                updatesql = "update chapter set flag = 1 ,content = %s where novelId = %s and chapterId = %s"
+                for item in result:
+                    novelId, chapterId, source, sourceid = item[0], item[1], item[2], item[3]
+                    SpiderTools.sourceid = sourceid
+                    html = SpiderTools.get_html(source, encoding=SpiderTools.getRes().encoding,
+                                                header_host=SpiderTools.getRes().host)
+
+                    content = SpiderTools.get_pyquery_content(html, SpiderTools.getRes().select_chapter_content)
+                    content.remove("script")
+                    text = content.text().encode("utf-8", errors="ignore")
+                    zlib_chapter_text = zlib.compress(text)
+                    default_dbhelper.update(updatesql, (zlib_chapter_text, novelId, chapterId))
+                    time.sleep(random.uniform(1, 3))
+                result = default_dbhelper.query(sql)
 
     # 开始抓取
     def start(self, flag):
