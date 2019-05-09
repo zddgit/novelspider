@@ -258,10 +258,10 @@ class NovelResource:
         sql_tables = "SELECT `table_name` from router where sourceid = %s"
         tables = default_dbhelper.query(sql_tables,(SpiderTools.sourceid))
         for table_name in tables:
-            sql = "select novelId,chapterId,source,sourceid from {} where flag = 0 limit 100".format(table_name)
+            sql = "select novelId,chapterId,source,sourceid from {} where flag = 0 limit 100".format(table_name[0])
             result = default_dbhelper.query(sql)
             while result is not None and len(result) > 0:
-                updatesql = "update chapter set flag = 1 ,content = %s where novelId = %s and chapterId = %s"
+                updatesql = "update {} set flag = 1 ,content = %s where novelId = %s and chapterId = %s".format(table_name[0])
                 for item in result:
                     novelId, chapterId, source, sourceid = item[0], item[1], item[2], item[3]
                     SpiderTools.sourceid = sourceid
@@ -273,7 +273,7 @@ class NovelResource:
                     text = content.text().encode("utf-8", errors="ignore")
                     zlib_chapter_text = zlib.compress(text)
                     default_dbhelper.update(updatesql, (zlib_chapter_text, novelId, chapterId))
-                    time.sleep(random.uniform(1, 3))
+                    time.sleep(random.uniform(0.5, 2))
                 result = default_dbhelper.query(sql)
 
     # 开始抓取
