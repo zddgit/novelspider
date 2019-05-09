@@ -231,7 +231,7 @@ class NovelResource:
                                     (SpiderTools.sourceid, novel_id, SpiderTools.table_name))
         else:
             SpiderTools.table_name = total[0]
-            result = default_dbhelper.query_one("select count(1) from %s", (SpiderTools.table_name))
+            result = default_dbhelper.query_one("select count(1) from {}".format(SpiderTools.table_name))
             if result is None:
                 SpiderTools.total[SpiderTools.sourceid] = 0
             else:
