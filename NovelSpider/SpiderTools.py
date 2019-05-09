@@ -8,7 +8,7 @@ resource = {}
 # 运行期间数据来源
 sourceid = 0
 # 运行期间要插入的表
-table_name = ""
+table_name = {}
 # 运行期间对应表所存在的数据总量
 total = {}
 # 分表创建表的语句
