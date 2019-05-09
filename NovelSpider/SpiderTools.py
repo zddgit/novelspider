@@ -30,6 +30,7 @@ CREATE TABLE `chapter_%s_%s` (
 
 def addRes(key: int, value: NovelResource):
     resource[key] = value
+    table_name[key] = None
 
 
 def getRes():

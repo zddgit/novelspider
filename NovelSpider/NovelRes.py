@@ -212,7 +212,7 @@ class NovelResource:
         sql = sql + ",".join(insertchapters)
         default_dbhelper.update(sql)
         SpiderTools.total[SpiderTools.sourceid] = SpiderTools.total[SpiderTools.sourceid] + len(insertchapters)
-        if SpiderTools.total[SpiderTools.sourceid] > 10000:
+        if SpiderTools.total[SpiderTools.sourceid] > 5000000:
             default_dbhelper.update("update router set novel_id_end = %s where sourceid = %s and novel_id_end is null",
                                     (novel_id, SpiderTools.sourceid))
 
