@@ -267,13 +267,14 @@ class NovelResource:
                     SpiderTools.sourceid = sourceid
                     html = SpiderTools.get_html(source, encoding=SpiderTools.getRes().encoding,
                                                 header_host=SpiderTools.getRes().host)
-
+                    if html is None:
+                        continue
                     content = SpiderTools.get_pyquery_content(html, SpiderTools.getRes().select_chapter_content)
                     content.remove("script")
                     text = content.text().encode("utf-8", errors="ignore")
                     zlib_chapter_text = zlib.compress(text)
                     default_dbhelper.update(updatesql, (zlib_chapter_text, novelId, chapterId))
-                    time.sleep(random.uniform(0.5, 2))
+                    time.sleep(random.uniform(1, 2))
                 result = default_dbhelper.query(sql)
 
     # 开始抓取
