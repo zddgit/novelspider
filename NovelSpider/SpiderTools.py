@@ -1,6 +1,7 @@
 import requests
 from pyquery import PyQuery
-from requests import RequestException
+
+from NovelSpider.DBhelper import default_dbhelper
 from NovelSpider.NovelRes import NovelResource
 
 # 具体使用的来源信息
@@ -48,6 +49,7 @@ def get_html(url: str, proxies=None, network_err_fn=None, encoding="utf-8", retu
         headers["Host"] = header_host
     if not (url.startswith("https") or url.startswith("http")):
         url = "http://" + url
+    response = None
     try:
         if proxies is None:
             print("don't pass proxies")
@@ -68,7 +70,17 @@ def get_html(url: str, proxies=None, network_err_fn=None, encoding="utf-8", retu
     except BaseException as e:
         print("network err,{}".format(e))
         if network_err_fn is not None:
-            network_err_fn()
+            network_err_fn(response)
+
+
+# 网络500错误处理
+def deal_with_status_500(tablename, novel_id, chapter_id):
+    def fn(response):
+        if response is not None and response.status_code == 500:
+            sql = "update {} set flag = 2 where novelId = %s and chapterId = %s".format(tablename)
+            default_dbhelper.update(sql, novel_id, chapter_id)
+
+    return fn
 
 
 # 从指定的文档获取指定元素内容包装为pyquery类型
@@ -100,7 +112,6 @@ def save_to_file(file_name, save_text):
 
 
 if __name__ == '__main__':
-
     html = get_html("http://www.quanwenyuedu.io/n/aoshidanshen/xiaoshuo.html")
     tag = get_pyquery_content(html, ".top p:eq(2) span").text()
     print(tag)
