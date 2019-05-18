@@ -6,7 +6,7 @@ from concurrent.futures.thread import ThreadPoolExecutor
 from pyquery import PyQuery
 
 from NovelSpider import SpiderTools
-from NovelSpider.DBhelper import default_dbhelper
+from NovelSpider.DBhelper import default_dbhelper, DBhelper
 
 
 class NovelResource:
@@ -260,33 +260,7 @@ class NovelResource:
         tables = default_dbhelper.query(sql_tables,(SpiderTools.sourceid))
         executor = ThreadPoolExecutor(max_workers=len(tables))
         for table_name in tables:
-            executor.submit(self.novel_chapter_detail_save_by_tablename(table_name[0]))
-
-
-    # 按照具体表抓取章节内容
-    def novel_chapter_detail_save_by_tablename(self, table_name):
-        sql = "select novelId,chapterId,source,sourceid from {} where flag = 0 limit 100".format(table_name)
-        result = default_dbhelper.query(sql)
-        while result is not None and len(result) > 0:
-            updatesql = "update {} set flag = 1 ,content = %s where novelId = %s and chapterId = %s".format(table_name)
-            for item in result:
-                novelId, chapterId, source, sourceid = item[0], item[1], item[2], item[3]
-                SpiderTools.sourceid = sourceid
-                html = SpiderTools.get_html(source, encoding=SpiderTools.getRes().encoding,
-                                            header_host=SpiderTools.getRes().host,
-                                            network_err_fn=SpiderTools.deal_with_status_500(table_name, novelId,
-                                                                                            chapterId))
-                if html is None:
-                    time.sleep(random.uniform(0.2, 0.5))
-                    continue
-                content = SpiderTools.get_pyquery_content(html, SpiderTools.getRes().select_chapter_content)
-                content.remove("script")
-                text = content.text().encode("utf-8", errors="ignore")
-                zlib_chapter_text = zlib.compress(text)
-                default_dbhelper.update(updatesql, (zlib_chapter_text, novelId, chapterId))
-                time.sleep(random.uniform(0.2, 0.5))
-            result = default_dbhelper.query(sql)
-
+            executor.submit(novel_chapter_detail_save_by_tablename, (table_name[0]))
     # 开始抓取
     def start(self, flag):
         if flag == 1:
@@ -297,3 +271,34 @@ class NovelResource:
             self.novel_detail_save()
         if flag == 3:
             self.novel_chapter_detail_save()
+
+
+# 按照具体表抓取章节内容
+def novel_chapter_detail_save_by_tablename(table_name):
+    dbhelper = DBhelper(host="localhost", user='root', password='mysql', database='novels')
+    sql = "select novelId,chapterId,source,sourceid from {} where flag = 0 limit 100".format(table_name)
+    result = dbhelper.query(sql)
+    while result is not None and len(result) > 0:
+        updatesql = "update {} set flag = 1 ,content = %s where novelId = %s and chapterId = %s".format(table_name)
+        for item in result:
+            novelId, chapterId, source, sourceid = item[0], item[1], item[2], item[3]
+            SpiderTools.sourceid = sourceid
+            start_time = time.time()
+            html = SpiderTools.get_html(source, encoding=SpiderTools.getRes().encoding,
+                                        header_host=SpiderTools.getRes().host,
+                                        network_err_fn=SpiderTools.deal_with_status_500(table_name, novelId, chapterId))
+            end_time = time.time()
+            if html is None:
+                if (end_time-start_time) < 0.2:
+                    time.sleep(random.uniform(0.2, 0.4))
+                continue
+            content = SpiderTools.get_pyquery_content(html, SpiderTools.getRes().select_chapter_content)
+            content.remove("script")
+            text = content.text().encode("utf-8", errors="ignore")
+            zlib_chapter_text = zlib.compress(text)
+            dbhelper.update(updatesql, (zlib_chapter_text, novelId, chapterId))
+            if (end_time-start_time) < 0.2:
+                time.sleep(random.uniform(0.2, 0.4))
+        result = dbhelper.query(sql)
+
+
