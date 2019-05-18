@@ -283,11 +283,9 @@ def novel_chapter_detail_save_by_tablename(table_name):
         for item in result:
             novelId, chapterId, source, sourceid = item[0], item[1], item[2], item[3]
             SpiderTools.sourceid = sourceid
-            start_time = time.time()
             html = SpiderTools.get_html(source, encoding=SpiderTools.getRes().encoding,
                                         header_host=SpiderTools.getRes().host,
-                                        network_err_fn=SpiderTools.deal_with_status_500(table_name, novelId, chapterId))
-            end_time = time.time()
+                                        network_err_fn=SpiderTools.deal_with_status_500(table_name, novelId, chapterId, dbhelper))
             if html is None:
                 time.sleep(random.uniform(0.2, 0.4))
                 continue

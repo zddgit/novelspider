@@ -74,11 +74,11 @@ def get_html(url: str, proxies=None, network_err_fn=None, encoding="utf-8", retu
 
 
 # 网络500错误处理
-def deal_with_status_500(tablename, novel_id, chapter_id):
+def deal_with_status_500(tablename, novel_id, chapter_id,dbhelper):
     def fn(response):
         if response is not None and response.status_code == 500:
             sql = "update {} set flag = 2 where novelId = %s and chapterId = %s".format(tablename)
-            default_dbhelper.update(sql, novel_id, chapter_id)
+            dbhelper.update(sql, (novel_id, chapter_id))
 
     return fn
 
