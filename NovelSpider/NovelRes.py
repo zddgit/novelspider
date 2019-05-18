@@ -289,16 +289,14 @@ def novel_chapter_detail_save_by_tablename(table_name):
                                         network_err_fn=SpiderTools.deal_with_status_500(table_name, novelId, chapterId))
             end_time = time.time()
             if html is None:
-                if (end_time-start_time) < 0.2:
-                    time.sleep(random.uniform(0.2, 0.4))
+                time.sleep(random.uniform(0.2, 0.4))
                 continue
             content = SpiderTools.get_pyquery_content(html, SpiderTools.getRes().select_chapter_content)
             content.remove("script")
             text = content.text().encode("utf-8", errors="ignore")
             zlib_chapter_text = zlib.compress(text)
             dbhelper.update(updatesql, (zlib_chapter_text, novelId, chapterId))
-            if (end_time-start_time) < 0.2:
-                time.sleep(random.uniform(0.2, 0.4))
+            time.sleep(random.uniform(0.2, 0.4))
         result = dbhelper.query(sql)
 
 
