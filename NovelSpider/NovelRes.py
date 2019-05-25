@@ -294,6 +294,9 @@ def novel_chapter_detail_save_by_tablename(table_name):
             text = content.text().encode("utf-8", errors="ignore")
             zlib_chapter_text = zlib.compress(text)
             dbhelper.update(updatesql, (zlib_chapter_text, novelId, chapterId))
+            if chapterId == 1:
+                updateNovelSql = "update novel set status = 2 where id =%s"
+                dbhelper.update(updateNovelSql,(novelId))
             time.sleep(random.uniform(0.2, 0.4))
         result = dbhelper.query(sql)
 
